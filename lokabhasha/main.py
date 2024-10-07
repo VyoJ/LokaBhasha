@@ -14,8 +14,17 @@ from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
+from urllib.parse import quote_plus
 
-SQLALCHEMY_DATABASE_URL = "mysql://root:Root@604@localhost/lokabhasha"
+DB_USER = "root"
+DB_PASSWORD = "Root@604"
+DB_HOST = "localhost"
+DB_NAME = "lokabhasha"
+encoded_password = quote_plus(DB_PASSWORD)
+
+SQLALCHEMY_DATABASE_URL = (
+    f"mysql+pymysql://{DB_USER}:{encoded_password}@{DB_HOST}/{DB_NAME}"
+)
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
