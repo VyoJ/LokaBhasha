@@ -16,8 +16,8 @@ from datetime import datetime
 from typing import List, Optional
 from urllib.parse import quote_plus
 
-DB_USER = "root"
-DB_PASSWORD = "Root@604"
+DB_USER = ""
+DB_PASSWORD = ""
 DB_HOST = "localhost"
 DB_NAME = "lokabhasha"
 encoded_password = quote_plus(DB_PASSWORD)
