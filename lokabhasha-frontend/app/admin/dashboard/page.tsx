@@ -1,9 +1,28 @@
+"use client";
+
+import { useAuth } from "@/app/contexts/auth-context";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import Link from "next/link";
+import { Spinner } from "@/components/spinner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, BookOpenCheck, Brain, BarChart } from "lucide-react";
 
 export default function AdminDashboard() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/login");
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading) {
+    return <Spinner />;
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <header className="px-4 lg:px-6 h-14 flex items-center bg-white shadow-sm">
