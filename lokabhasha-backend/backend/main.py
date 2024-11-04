@@ -14,12 +14,17 @@ from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
+import os
 from urllib.parse import quote_plus
+from dotenv import load_dotenv
 
-DB_USER = "root"
-DB_PASSWORD = "Root@604"
-DB_HOST = "localhost"
-DB_NAME = "lokabhasha"
+load_dotenv()
+
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_NAME = os.getenv("DB_NAME")
+
 encoded_password = quote_plus(DB_PASSWORD)
 
 SQLALCHEMY_DATABASE_URL = (
@@ -67,6 +72,22 @@ class UserInDB(BaseModel):
     email: str
     joined_on: datetime
     pref_lang: Optional[int] = None
+
+    class Config:
+        orm_mode = True
+
+
+class LanguageCreate(BaseModel):
+    name: str
+
+
+class LanguageUpdate(BaseModel):
+    name: Optional[str] = None
+
+
+class LanguageInDB(BaseModel):
+    lang_id: int
+    name: str
 
     class Config:
         orm_mode = True
@@ -130,6 +151,80 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.delete(db_user)
     db.commit()
     return db_user
+
+
+@app.post("/languages/", response_model=LanguageInDB)
+def create_language(language: LanguageCreate, db: Session = Depends(get_db)):
+    # Check if language already exists
+    db_language = db.query(Language).filter(Language.name == language.name).first()
+    if db_language:
+        raise HTTPException(status_code=400, detail="Language already exists")
+
+    db_language = Language(name=language.name)
+    db.add(db_language)
+    db.commit()
+    db.refresh(db_language)
+    return db_language
+
+
+@app.get("/languages/", response_model=List[LanguageInDB])
+def read_languages(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    languages = db.query(Language).offset(skip).limit(limit).all()
+    return languages
+
+
+@app.get("/languages/{lang_id}", response_model=LanguageInDB)
+def read_language(lang_id: int, db: Session = Depends(get_db)):
+    db_language = db.query(Language).filter(Language.lang_id == lang_id).first()
+    if db_language is None:
+        raise HTTPException(status_code=404, detail="Language not found")
+    return db_language
+
+
+@app.put("/languages/{lang_id}", response_model=LanguageInDB)
+def update_language(
+    lang_id: int, language: LanguageUpdate, db: Session = Depends(get_db)
+):
+    db_language = db.query(Language).filter(Language.lang_id == lang_id).first()
+    if db_language is None:
+        raise HTTPException(status_code=404, detail="Language not found")
+
+    # Check if the new name already exists (if name is being updated)
+    if language.name:
+        existing_language = (
+            db.query(Language)
+            .filter(Language.name == language.name, Language.lang_id != lang_id)
+            .first()
+        )
+        if existing_language:
+            raise HTTPException(status_code=400, detail="Language name already exists")
+
+    for var, value in vars(language).items():
+        if value is not None:
+            setattr(db_language, var, value)
+
+    db.commit()
+    db.refresh(db_language)
+    return db_language
+
+
+@app.delete("/languages/{lang_id}", response_model=LanguageInDB)
+def delete_language(lang_id: int, db: Session = Depends(get_db)):
+    db_language = db.query(Language).filter(Language.lang_id == lang_id).first()
+    if db_language is None:
+        raise HTTPException(status_code=404, detail="Language not found")
+
+    # Check if any users are using this language as their preferred language
+    users_with_language = db.query(User).filter(User.pref_lang == lang_id).first()
+    if users_with_language:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete language as it is being used as preferred language by some users",
+        )
+
+    db.delete(db_language)
+    db.commit()
+    return db_language
 
 
 if __name__ == "__main__":
