@@ -11,26 +11,19 @@ def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
 
-def create_user(db: Session, user: UserCreate):
-    db_user = User(
-        username=user.username,
-        email=user.email,
-        password=user.password,
-        joined_on=datetime.now(),
-        pref_lang=user.pref_lang,
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
-
-
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_user(db: Session, user_id: int):
-    return db.query(User).filter(User.u_id == user_id).first()
+    return (
+        db.query(User)
+        .filter(User.u_id == user_id)
+        .with_entities(
+            User.u_id, User.username, User.email, User.joined_on, User.pref_lang
+        )
+        .first()
+    )
 
 
 def update_user(db: Session, db_user: User, user: UserUpdate):

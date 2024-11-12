@@ -1,11 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from backend.utils.database import Base
 
-Base = declarative_base()
 
-
-# TODO: Add Foreign Key constraints properly for language and module
 class Module(Base):
     __tablename__ = "modules"
 
@@ -14,5 +11,5 @@ class Module(Base):
     name = Column(String(100), nullable=False)
     desc = Column(String(500), nullable=False)
     pre_id = Column(Integer, ForeignKey("modules.m_id"), nullable=True)
-    language = relationship("Language", back_populates="modules")
     prerequisites = relationship("Module", remote_side=[m_id])
+    language = relationship("Language", back_populates="modules")
