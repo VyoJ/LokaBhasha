@@ -1,15 +1,21 @@
 from fastapi import FastAPI
-from backend.routers import user, language, apis, module, question, resources, responses, answers, auth
+from backend.routers import (
+    language,
+    user,
+    apis,
+    module,
+    question,
+    resources,
+    responses,
+    answers,
+    auth,
+)
 from backend.utils.database import engine, Base
-from backend.models import user as user_model, language as language_model  # Ensure models are imported
+from backend.models.language import Language
+from backend.models.user import User
 
 app = FastAPI()
 
-# Drop all tables
-Base.metadata.drop_all(bind=engine)
-
-# Create all tables
-Base.metadata.create_all(bind=engine)
 
 app.include_router(language.router)
 app.include_router(user.router)
@@ -23,4 +29,5 @@ app.include_router(auth.router, prefix="/auth")
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from backend.schemas.language import LanguageCreate, LanguageUpdate, LanguageInDB
+from backend.schemas.language import LanguageBase, LanguageUpdate, LanguageInDB
 from backend.crud.language import (
     create_language,
     get_language,
@@ -10,11 +10,12 @@ from backend.crud.language import (
     reset_language_id_sequence,
 )
 from backend.utils.database import get_db
+from backend.models.language import Language
 
 router = APIRouter()
 
 @router.post("/languages/", response_model=LanguageInDB)
-def create_language_endpoint(language: LanguageCreate, db: Session = Depends(get_db)):
+def create_language_endpoint(language: LanguageBase, db: Session = Depends(get_db)):
     return create_language(db, language)
 
 @router.get("/languages/", response_model=List[LanguageInDB])
