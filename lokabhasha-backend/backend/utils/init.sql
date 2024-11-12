@@ -25,7 +25,8 @@ FOREIGN KEY (pref_lang) REFERENCES Languages(lang_id);
 
 -- Create APIs table
 CREATE TABLE APIs (
-    api INT PRIMARY KEY AUTO_INCREMENT,
+    api_id INT PRIMARY KEY AUTO_INCREMENT,
+    api_url VARCHAR(200) NOT NULL,
     lang_id INT NOT NULL,
     FOREIGN KEY (lang_id) REFERENCES Languages(lang_id)
 );
