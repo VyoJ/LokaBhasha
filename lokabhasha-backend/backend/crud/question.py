@@ -21,9 +21,9 @@ def get_question(db: Session, question_id: int):
 
 
 def update_question(db: Session, db_question: Question, question: QuestionUpdate):
-    for var, value in vars(question).items():
-        if value is not None:
-            setattr(db_question, var, value)
+    update_data = question.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_question, field, value)
     db.commit()
     db.refresh(db_question)
     return db_question

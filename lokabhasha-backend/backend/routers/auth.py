@@ -4,6 +4,11 @@ from backend.schemas.user import UserCreate, UserInDB, UserLogin
 from backend.crud.user import create_user, get_user_by_email, verify_password
 from backend.utils.database import get_db
 from passlib.context import CryptContext
+from datetime import datetime, timedelta
+from typing import Optional
+from jose import JWTError, jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
