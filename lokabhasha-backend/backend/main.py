@@ -9,6 +9,7 @@ from backend.routers import (
     responses,
     answers,
     auth,
+    analytics,
 )
 from backend.utils.database import engine, Base
 from backend.utils.models import Language
@@ -26,6 +27,7 @@ app.include_router(resources.router)
 app.include_router(responses.router)
 app.include_router(answers.router)
 app.include_router(auth.router, prefix="/auth")
+app.include_router(analytics.router)
 
 if __name__ == "__main__":
     import uvicorn
