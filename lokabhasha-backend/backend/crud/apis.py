@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from backend.models.apis import API
+from backend.utils.models import API
 from backend.schemas.apis import APICreate, APIUpdate
 
 

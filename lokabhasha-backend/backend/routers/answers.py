@@ -1,5 +1,5 @@
 from typing import List
-from backend.models.answers import Answer
+from backend.utils.models import Answer
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.schemas.answers import AnswerCreate, AnswerUpdate, AnswerInDB

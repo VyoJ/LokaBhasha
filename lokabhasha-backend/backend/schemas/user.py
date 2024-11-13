@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -23,11 +23,9 @@ class UserUpdate(BaseModel):
 
 
 class UserInDB(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     u_id: int
     username: str
     email: str
     joined_on: datetime
     pref_lang: Optional[int] = None
-
-    class Config:
-        orm_mode = True

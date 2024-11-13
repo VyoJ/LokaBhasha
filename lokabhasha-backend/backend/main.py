@@ -11,8 +11,8 @@ from backend.routers import (
     auth,
 )
 from backend.utils.database import engine, Base
-from backend.models.language import Language
-from backend.models.user import User
+from backend.utils.models import Language
+from backend.utils.models import User
 
 app = FastAPI()
 

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class LanguageBase(BaseModel):
@@ -10,7 +10,5 @@ class LanguageUpdate(LanguageBase):
 
 
 class LanguageInDB(LanguageBase):
+    model_config = ConfigDict(from_attributes=True)
     lang_id: int
-
-    class Config:
-        from_attributes = True

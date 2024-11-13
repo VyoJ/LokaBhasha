@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 interface User {
   u_id: number;
@@ -26,18 +27,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch("http://localhost:8000/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
+      const response = await axios.post("http://localhost:8000/auth/login", {
+        email,
+        password,
       });
 
-      if (!response.ok) {
-        throw new Error("Login failed");
-      }
-
-      const userData = await response.json();
+      const { token, userData } = response.data;
+      localStorage.setItem("token", token);
       setUser(userData);
       router.push("/dashboard");
     } catch (error) {
@@ -47,29 +43,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    // Call logout API endpoint if needed
+    localStorage.removeItem("token");
     router.push("/login");
   };
 
   useEffect(() => {
-    // Check for existing session
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/users/me", {
-          credentials: "include",
-        });
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
+    const token = localStorage.getItem("token");
+    if (token) {
+      const fetchUser = async () => {
+        try {
+          const response = await axios.get("http://localhost:8000/users/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.status === 200) {
+            const userData = response.data;
+            setUser(userData);
+          }
+        } catch (error) {
+          setUser(null);
+        } finally {
+          setIsLoading(false);
         }
-      } catch (error) {
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      };
 
-    checkAuth();
+      fetchUser();
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
   return (

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class ResponseCreate(BaseModel):
@@ -14,11 +14,9 @@ class ResponseUpdate(BaseModel):
     latency: Optional[int] = None
 
 class ResponseInDB(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     resp_id: int
     response_asr: str
     response_url: str
     response_translate: str
     latency: int
-
-    class Config:
-        orm_mode = True

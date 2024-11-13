@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from backend.models.language import Language
+from backend.utils.models import Language
 from backend.schemas.language import LanguageBase, LanguageUpdate
 
 
