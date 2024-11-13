@@ -6,7 +6,6 @@ from backend.schemas.responses import ResponseCreate, ResponseUpdate
 def create_response(db: Session, response: ResponseCreate):
     db_response = Response(
         response_asr=response.response_asr,
-        response_url=response.response_url,
         response_translate=response.response_translate,
         latency=response.latency,
     )

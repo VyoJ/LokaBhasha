@@ -108,3 +108,21 @@ FROM Modules m WHERE m.lang_id = 3 AND m.name = 'medium'
 UNION ALL
 SELECT m.m_id, 'My grandparents live in Bangalore.', 'என் தாத்தா பாட்டி பெங்களூரில் வசிக்கிறார்கள்.', 'Statement'
 FROM Modules m WHERE m.lang_id = 3 AND m.name = 'medium';
+
+-- Clear existing resources
+TRUNCATE TABLE Resources;
+
+-- Insert resources for Kannada (lang_id = 2)
+INSERT INTO Resources (lang_id, resource_id, url, type, format) VALUES
+(2, 1, 'https://www.youtube.com/playlist?list=PLsRjuO3afXH2HV9Mb986PO7s4mQ5fToFZ', 'YouTube', 'video'),
+(2, 2, 'http://www.learnkannadaonline.com/', 'blog', 'website');
+
+-- Insert resources for Tamil (lang_id = 3)
+INSERT INTO Resources (lang_id, resource_id, url, type, format) VALUES
+(3, 1, 'https://www.youtube.com/playlist?list=PLsRjuO3afXH2oWYCEAXRlQzqtYvcW2rTE', 'YouTube', 'video'),
+(3, 2, 'https://www.learntamil.com/', 'blog', 'website');
+
+-- Insert resources for Hindi (lang_id = 1)
+INSERT INTO Resources (lang_id, resource_id, url, type, format) VALUES
+(1, 1, 'https://www.youtube.com/playlist?list=PLsRjuO3afXH0yVqVDcOQ0-WUzVihv06dz', 'YouTube', 'video'),
+(1, 2, 'https://www.lingohut.com/en/l70/learn-hindi', 'blog', 'website');

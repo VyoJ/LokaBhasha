@@ -74,9 +74,9 @@ CREATE TABLE Answers (
 CREATE TABLE Responses (
     resp_id INT PRIMARY KEY AUTO_INCREMENT,
     response_asr TEXT,
-    response_url VARCHAR(255),
     response_translate TEXT,
-    latency FLOAT
+    latency FLOAT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Add foreign key constraint to Answers table

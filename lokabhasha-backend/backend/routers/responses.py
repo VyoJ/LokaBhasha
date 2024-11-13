@@ -10,12 +10,20 @@ from backend.crud.responses import (
     delete_response,
 )
 from backend.utils.database import get_db
+from sqlalchemy import text  
 
 router = APIRouter()
 
 
 @router.post("/responses/", response_model=ResponseInDB)
-def create_response_endpoint(response: ResponseCreate, db: Session = Depends(get_db)):
+def create_response_endpoint(
+    user_id: int,
+    question_id: int,
+    response: ResponseCreate,
+    db: Session = Depends(get_db),
+):
+    db.execute(text("SET @current_user_id = :user_id"), {"user_id": user_id})
+    db.execute(text("SET @current_question_id = :question_id"), {"question_id": question_id})
     return create_response(db, response)
 
 

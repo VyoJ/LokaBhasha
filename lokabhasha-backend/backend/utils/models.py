@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey,func
 from sqlalchemy.orm import relationship
 from backend.utils.database import Base
 
@@ -68,10 +68,9 @@ class Response(Base):
 
     resp_id = Column(Integer, primary_key=True, index=True)
     response_asr = Column(String(500), nullable=False)
-    response_url = Column(String(500), nullable=False)
     response_translate = Column(String(500), nullable=False)
     latency = Column(Integer, nullable=False)
-
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
     answers = relationship("Answer", back_populates="response")
 
 
