@@ -1,4 +1,4 @@
--- triggers_and_procedures.sql
+USE lokabhasha;
 
 -- Trigger to create answer entry after response insertion
 DELIMITER //
@@ -14,51 +14,6 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
-
--- Procedure to check student completion status
-DELIMITER //
-CREATE PROCEDURE GetUserProgress(IN p_user_id INT)
-BEGIN
-    -- Declare variables
-    DECLARE total_questions INT;
-    DECLARE answered_questions INT;
-    
-    -- Get progress for each module
-    SELECT 
-        m.lang_id,
-        l.name AS language_name,
-        m.name AS module_name,
-        COUNT(DISTINCT q.q_id) AS total_questions,
-        COUNT(DISTINCT a.q_id) AS answered_questions,
-        CASE 
-            WHEN COUNT(DISTINCT a.q_id) = COUNT(DISTINCT q.q_id) THEN 'Completed'
-            WHEN COUNT(DISTINCT a.q_id) > 0 THEN 'In Progress'
-            ELSE 'Not Started'
-        END AS module_status,
-        ROUND((COUNT(DISTINCT a.q_id) / COUNT(DISTINCT q.q_id)) * 100, 2) AS completion_percentage
-    FROM 
-        Modules m
-        JOIN Languages l ON m.lang_id = l.lang_id
-        LEFT JOIN Questions q ON m.m_id = q.m_id
-        LEFT JOIN Answers a ON q.q_id = a.q_id AND a.u_id = p_user_id
-    GROUP BY 
-        m.m_id, m.lang_id, l.name, m.name
-    ORDER BY 
-        l.name, m.name;
-        
-    -- Get overall progress
-    SELECT 
-        COUNT(DISTINCT q.q_id) AS total_questions,
-        COUNT(DISTINCT a.q_id) AS completed_questions,
-        ROUND((COUNT(DISTINCT a.q_id) / COUNT(DISTINCT q.q_id)) * 100, 2) AS overall_completion_percentage
-    FROM 
-        Questions q
-        LEFT JOIN Answers a ON q.q_id = a.q_id AND a.u_id = p_user_id;
-END //
-DELIMITER ;
-
--- Example usage of the procedure
--- CALL GetUserProgress(1);
 
 -- Helper procedure to set current user and question context
 DELIMITER //
@@ -122,8 +77,17 @@ BEGIN
     JOIN Questions q ON m.m_id = q.m_id
     JOIN Answers a ON q.q_id = a.q_id
     JOIN Responses r ON a.resp_id = r.resp_id
-    WHERE l.name = GetMostActiveLanguage()
-    GROUP BY l.lang_id;
+    WHERE l.name = (
+        SELECT l2.name
+        FROM Languages l2
+        JOIN Modules m2 ON l2.lang_id = m2.lang_id
+        JOIN Questions q2 ON m2.m_id = q2.m_id
+        JOIN Answers a2 ON q2.q_id = a2.q_id
+        JOIN Responses r2 ON a2.resp_id = r2.resp_id
+        GROUP BY l2.lang_id, l2.name
+        ORDER BY COUNT(r2.resp_id) DESC
+        LIMIT 1
+    );
     RETURN COALESCE(response_count, 0);
 END //
 

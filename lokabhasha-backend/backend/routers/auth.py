@@ -26,4 +26,9 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = get_user_by_email(db, email=user.email)
     if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=400, detail="Invalid credentials")
-    return {"message": "Login successful"}
+    return {
+        "message": "Login successful",
+        "id": db_user.u_id,
+        "name": db_user.username,
+        "lang": db_user.pref_lang,
+    }

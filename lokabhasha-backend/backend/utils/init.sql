@@ -5,7 +5,7 @@ USE lokabhasha;
 -- Create Users table
 CREATE TABLE Users (
     u_id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) NOT NULL UNIQUE,
+    username VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     joined_on DATETIME NOT NULL,

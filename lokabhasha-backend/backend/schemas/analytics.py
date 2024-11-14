@@ -1,26 +1,8 @@
-# from pydantic import BaseModel, ConfigDict
-# from typing import Optional
-
-
-# class AdminAnalytics(BaseModel):
-#     model_config = ConfigDict(from_attributes=True)
-#     pass
-
-
-# class UserAnalytics(BaseModel):
-#     model_config = ConfigDict(from_attributes=True)
-#     pass
-
-
-# class UserProgress(BaseModel):
-#     model_config = ConfigDict(from_attributes=True)
-#     pass
-
-# schemas/analytics.py
 from pydantic import BaseModel, ConfigDict
 from typing import List
 from datetime import datetime, date
 from decimal import Decimal
+
 
 class ModuleProgress(BaseModel):
     lang_id: int
@@ -31,15 +13,18 @@ class ModuleProgress(BaseModel):
     module_status: str
     completion_percentage: float
 
+
 class OverallProgress(BaseModel):
     total_questions: int
     completed_questions: int
     overall_completion_percentage: float
 
+
 class UserProgress(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     module_progress: List[ModuleProgress]
     overall_progress: OverallProgress
+
 
 class AdminAnalytics(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -48,6 +33,7 @@ class AdminAnalytics(BaseModel):
     active_language_responses: int
     today_signups: int
     overall_avg_latency: float
+
 
 class UserAnalytics(BaseModel):
     model_config = ConfigDict(from_attributes=True)
