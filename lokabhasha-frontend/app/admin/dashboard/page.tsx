@@ -1,25 +1,53 @@
 "use client";
 
-import { useAuth } from "@/app/contexts/auth-context";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Spinner } from "@/components/spinner";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, BookOpenCheck, Brain, BarChart } from "lucide-react";
 
+interface AdminAnalytics {
+  daily_responses: number;
+  most_active_language: string;
+  active_language_responses: number;
+  today_signups: number;
+  overall_avg_latency: number;
+}
+
 export default function AdminDashboard() {
-  const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [analytics, setAnalytics] = useState<AdminAnalytics | null>(null);
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      if (userData.email === "admin@admin.com") {
+        setUser(userData);
+        fetchAnalytics();
+      } else {
+        router.push("/login");
+      }
+    } else {
       router.push("/login");
     }
-  }, [user, isLoading, router]);
+    setIsLoading(false);
+  }, [router]);
 
-  if (isLoading) {
+  const fetchAnalytics = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/admin-analytics");
+      const data = await response.json();
+      setAnalytics(data);
+    } catch (error) {
+      console.error("Failed to fetch analytics:", error);
+    }
+  };
+
+  if (isLoading || !analytics) {
     return <Spinner />;
   }
 
@@ -40,13 +68,13 @@ export default function AdminDashboard() {
             className="text-sm font-medium hover:underline underline-offset-4"
             href="#"
           >
-            Users
+            Modules
           </Link>
           <Link
             className="text-sm font-medium hover:underline underline-offset-4"
             href="#"
           >
-            Courses
+            Resources
           </Link>
           <Link
             className="text-sm font-medium hover:underline underline-offset-4"
@@ -63,98 +91,67 @@ export default function AdminDashboard() {
         </nav>
       </header>
       <main className="flex-1 p-4 md:p-6 space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <h1 className="text-2xl font-bold text-gray-900">Welcome Admin! Here are the platform's usage stats</h1>
+        <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2 p-2">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-orange-500" />
+              <CardTitle className="text-sm font-medium">
+                New Users Today
+              </CardTitle>
+              <Users className="h-8 w-8 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">10,482</div>
+              <div className="text-2xl font-bold">
+                {analytics.today_signups}
+              </div>
+              <p className="text-xs text-muted-foreground">New signups today</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Daily Responses
+              </CardTitle>
+              <BookOpenCheck className="h-8 w-8 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {analytics.daily_responses}
+              </div>
+              <p className="text-xs text-muted-foreground">Responses today</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Most Active Language
+              </CardTitle>
+              <Brain className="h-8 w-8 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {analytics.most_active_language}
+              </div>
               <p className="text-xs text-muted-foreground">
-                +20% from last month
+                {analytics.active_language_responses} responses
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Active Courses
+                Avg Response Time
               </CardTitle>
-              <BookOpenCheck className="h-4 w-4 text-orange-500" />
+              <BarChart className="h-8 w-8 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">25</div>
-              <p className="text-xs text-muted-foreground">
-                +2 new courses this week
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                AI Interactions
-              </CardTitle>
-              <Brain className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1.2M</div>
-              <p className="text-xs text-muted-foreground">
-                +15% from last week
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                User Engagement
-              </CardTitle>
-              <BarChart className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">85%</div>
-              <p className="text-xs text-muted-foreground">
-                +5% from last month
-              </p>
+              <div className="text-2xl font-bold">
+                {analytics.overall_avg_latency.toFixed(2)}ms
+              </div>
+              <p className="text-xs text-muted-foreground">Overall average</p>
             </CardContent>
           </Card>
         </div>
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    New user registered: Priya Sharma
-                  </p>
-                  <p className="text-sm text-muted-foreground">2 minutes ago</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    Course completed: Hindi Basics
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    15 minutes ago
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    New AI model deployed: Bengali Advanced
-                  </p>
-                  <p className="text-sm text-muted-foreground">1 hour ago</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </main>
       <footer className="py-6 text-center text-sm text-gray-500">
         © 2024 LokaBhasha. All rights reserved.

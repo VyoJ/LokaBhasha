@@ -8,46 +8,68 @@ import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [language, setLanguage] = useState<number>(0);
   const router = useRouter();
   const { toast } = useToast();
 
-  async function login(email: string, password: string) {
-    const response = await axios.post("http://localhost:8000/auth/login", {
+  async function signup(
+    email: string,
+    password: string,
+    username: string,
+    language: number
+  ) {
+    const response = await axios.post("http://localhost:8000/auth/signup", {
       email,
       password,
+      username,
+      language,
     });
 
     if (response.data) {
-      const userData = {
-        id: response.data.id,
-        name: response.data.name,
-        email: email,
-        lang: response.data.lang,
-        isLoggedIn: true,
-      };
-      localStorage.setItem("user", JSON.stringify(userData));
-      toast({
-        title: "Successfully logged in!",
-        description: "Welcome back!",
-      });
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          email,
+          username,
+          language,
+          isLoggedIn: true,
+        })
+      );
       router.push("/dashboard");
     }
+
     return response.data;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(email, password);
+      await signup(email, password, username, language);
+      toast({
+        title: "Account created successfully!",
+        description: "Welcome to LokaBhasha!",
+      });
     } catch (error: any) {
-      console.error("Login failed:", error);
+      console.error("Signup failed:", error);
       toast({
         title: "Uh oh! Something went wrong.",
-        description: "Check your email, password or try again.",
+        description:
+          error.response?.status === 400
+            ? "Email might already be registered or check your inputs."
+            : "Please try again later.",
+        variant: "destructive",
       });
     }
   };
@@ -65,9 +87,19 @@ export default function LoginPage() {
       <main className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
           <h1 className="text-2xl font-bold text-center mb-6 text-orange-700">
-            Welcome Back
+            Welcome!
           </h1>
           <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your username"
+                required
+                type="text"
+              />
+            </div>
             <div className="space-y-2">
               <Input
                 id="email"
@@ -83,21 +115,37 @@ export default function LoginPage() {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
                 required
                 type="password"
               />
+            </div>
+            <div className="space-y-2">
+              <Select
+                onValueChange={(value) => setLanguage(parseInt(value))}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your preferred language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Hindi</SelectItem>
+                  <SelectItem value="2">Kannada</SelectItem>
+                  <SelectItem value="3">Tamil</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <Button
               className="w-full bg-orange-600 text-white hover:bg-orange-700"
               type="submit"
             >
-              Sign In
+              Sign Up
             </Button>
           </form>
           <div className="mt-6 text-center text-sm">
-            Don't have an account?{" "}
-            <Link className="text-orange-600 hover:underline" href="/signup">
-              Sign up
+            Have an account already?{" "}
+            <Link className="text-orange-600 hover:underline" href="/login">
+              Log In
             </Link>
           </div>
         </div>

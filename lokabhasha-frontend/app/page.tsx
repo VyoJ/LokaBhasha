@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,30 +22,25 @@ export default function Homepage() {
             LokaBhasha
           </span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
+        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
+          {" "}
           <Link
             className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
+            href="#features"
+            onClick={(e) => {
+              e.preventDefault();
+              document
+                .getElementById("features")
+                ?.scrollIntoView({ behavior: "smooth" });
+            }}
           >
             Features
           </Link>
           <Link
-            className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
+            className="text-sm font-medium text-white hover:no-underline"
+            href="/login"
           >
-            Pricing
-          </Link>
-          <Link
-            className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
-          >
-            About
-          </Link>
-          <Link
-            className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
-          >
-            Contact
+            <Button className="bg-orange-500">Login</Button>
           </Link>
         </nav>
       </header>
@@ -57,7 +54,7 @@ export default function Homepage() {
                     Master Indian Languages with AI
                   </h1>
                   <p className="max-w-[600px] text-gray-700 md:text-xl">
-                    Learn Hindi, Tamil, Bengali, and more with our cutting-edge
+                    Learn Hindi, Tamil, Kannada, and more with our cutting-edge
                     AI-powered platform. Immerse yourself in Indian culture
                     through language.
                   </p>
@@ -130,28 +127,9 @@ export default function Homepage() {
                 </p>
               </div>
               <div className="w-full max-w-sm space-y-2">
-                <form className="flex space-x-2">
-                  <Input
-                    className="max-w-lg flex-1"
-                    placeholder="Enter your email"
-                    type="email"
-                  />
-                  <Button
-                    className="bg-orange-600 text-white hover:bg-orange-700"
-                    type="submit"
-                  >
-                    Sign Up
-                  </Button>
-                </form>
-                <p className="text-xs text-gray-500">
-                  By signing up, you agree to our{" "}
-                  <Link
-                    className="underline underline-offset-2 hover:text-orange-600"
-                    href="#"
-                  >
-                    Terms & Conditions
-                  </Link>
-                </p>
+                <Link href="/signup">
+                  <Button className="bg-orange-500">Sign Up</Button>
+                </Link>
               </div>
             </div>
           </div>
