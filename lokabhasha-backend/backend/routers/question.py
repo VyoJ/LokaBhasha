@@ -10,6 +10,7 @@ from backend.crud.question import (
     delete_question,
 )
 from backend.utils.database import get_db
+from sqlalchemy import text
 
 router = APIRouter()
 
@@ -50,3 +51,26 @@ def delete_question_endpoint(question_id: int, db: Session = Depends(get_db)):
     if db_question is None:
         raise HTTPException(status_code=404, detail="Question not found")
     return delete_question(db, db_question)
+
+
+@router.get("/modules/{module_id}/next-question/{user_id}", response_model=QuestionInDB)
+def get_next_question_endpoint(
+    module_id: int, user_id: int, db: Session = Depends(get_db)
+):
+    # Wrap both SQL statements in text()
+    result = db.execute(
+        text("CALL GetNextQuestionId(:user_id, :module_id, @next_q_id)"),
+        {"user_id": user_id, "module_id": module_id},
+    )
+    next_question_id = db.execute(text("SELECT @next_q_id")).scalar()
+
+    if next_question_id is None:
+        raise HTTPException(
+            status_code=404, detail="No questions available in this module"
+        )
+
+    question = get_question(db, next_question_id)
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    return question

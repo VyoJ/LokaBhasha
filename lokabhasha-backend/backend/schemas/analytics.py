@@ -5,6 +5,7 @@ from decimal import Decimal
 
 
 class ModuleProgress(BaseModel):
+    module_id: int 
     lang_id: int
     language_name: str
     module_name: str

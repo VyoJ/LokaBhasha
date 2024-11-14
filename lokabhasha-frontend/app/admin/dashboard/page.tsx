@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Spinner } from "@/components/spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { BookOpen, Users, BookOpenCheck, Brain, BarChart } from "lucide-react";
 
 interface AdminAnalytics {
@@ -47,6 +48,11 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    router.push("/");
+  };
+
   if (isLoading || !analytics) {
     return <Spinner />;
   }
@@ -63,35 +69,32 @@ export default function AdminDashboard() {
             LokaBhasha Admin
           </span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
+        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
           <Link
             className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
+            href="/admin/modules"
           >
             Modules
           </Link>
           <Link
             className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
+            href="/admin/resources"
           >
             Resources
           </Link>
           <Link
             className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
-          >
-            Analytics
-          </Link>
-          <Link
-            className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
+            href="/admin/apis"
           >
             Settings
           </Link>
+          <Button onClick={handleLogout}>Logout</Button>
         </nav>
       </header>
       <main className="flex-1 p-4 md:p-6 space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Welcome Admin! Here are the platform's usage stats</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Welcome Admin! Here are the platform's usage stats
+        </h1>
         <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2 p-2">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

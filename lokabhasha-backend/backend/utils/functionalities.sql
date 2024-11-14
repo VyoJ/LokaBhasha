@@ -15,6 +15,33 @@ BEGIN
 END //
 DELIMITER ;
 
+DELIMITER //
+CREATE PROCEDURE GetNextQuestionId(
+    IN p_user_id INT,
+    IN p_module_id INT,
+    OUT next_question_id INT
+)
+BEGIN
+    -- Get the first question in the module that the user hasn't answered yet
+    SELECT MIN(q.q_id) INTO next_question_id
+    FROM Questions q
+    WHERE q.m_id = p_module_id
+    AND q.q_id NOT IN (
+        SELECT DISTINCT a.q_id 
+        FROM Answers a 
+        WHERE a.u_id = p_user_id
+    );
+    
+    -- If all questions are answered, return NULL
+    IF next_question_id IS NULL THEN
+        SELECT MIN(q.q_id) INTO next_question_id
+        FROM Questions q
+        WHERE q.m_id = p_module_id;
+    END IF;
+END //
+
+DELIMITER ;
+
 -- Helper procedure to set current user and question context
 DELIMITER //
 CREATE PROCEDURE SetUserContext(

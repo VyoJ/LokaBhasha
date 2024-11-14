@@ -31,6 +31,7 @@ import {
   User,
   BarChart2,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const LANGUAGE_CODES: { [key: number]: string } = {
   1: "Hindi",
@@ -44,6 +45,7 @@ const getLanguageName = (langId: number | null): string => {
 };
 
 interface ModuleProgress {
+  module_id: number;
   lang_id: number;
   language_name: string;
   module_name: string;
@@ -86,6 +88,7 @@ export default function UserDashboard() {
   );
   const [analytics, setAnalytics] = useState<UserAnalytics | null>(null);
   const [progress, setProgress] = useState<UserProgress | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -114,9 +117,6 @@ export default function UserDashboard() {
         axios.get(`http://localhost:8000/user-analytics/${userId}`),
         axios.get(`http://localhost:8000/user-progress/${userId}`),
       ]);
-      console.log("analyticsRes", analyticsRes);
-      console.log("progressRes", progressRes);
-      console.log("filteredModules", filteredModules);
       setAnalytics(analyticsRes.data);
       setProgress(progressRes.data);
     } catch (error) {
@@ -129,6 +129,24 @@ export default function UserDashboard() {
   const handleLogout = () => {
     localStorage.clear();
     router.push("/login");
+  };
+
+  const handleStartLesson = async (moduleId: number) => {
+    if (!user) return;
+
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/modules/${moduleId}/next-question/${user.u_id}`
+      );
+      const nextQuestion = response.data;
+      router.push(`/modules/${moduleId}/questions/${nextQuestion.q_id}`);
+    } catch (error) {
+      console.error("Failed to fetch next question:", error);
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Try again later.",
+      });
+    }
   };
 
   const filteredModules =
@@ -293,7 +311,10 @@ export default function UserDashboard() {
                 >
                   Close
                 </Button>
-                <Button className="bg-orange-500 hover:bg-orange-600">
+                <Button
+                  className="bg-orange-500 hover:bg-orange-600"
+                  onClick={() => handleStartLesson(selectedModule.module_id)}
+                >
                   Start Lesson
                 </Button>
               </div>

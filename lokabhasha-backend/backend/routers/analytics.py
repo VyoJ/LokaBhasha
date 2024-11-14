@@ -70,20 +70,22 @@ def user_analytics_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# Modify the SQL query in user_progress_endpoint to handle NULL cases
 @router.get("/user-progress/{u_id}", response_model=UserProgress)
 def user_progress_endpoint(u_id: int, db: Session = Depends(get_db)):
-    """Get user's progress across all modules."""
     try:
-        # Get module progress (first result set)
+        # Update the percentage calculation to handle zero questions
         module_results = db.execute(
             text(
-                "SELECT m.lang_id, l.name AS language_name, m.name AS module_name, "
+                "SELECT m.m_id, m.lang_id, l.name AS language_name, m.name AS module_name, "
                 "COUNT(DISTINCT q.q_id) AS total_questions, "
                 "COUNT(DISTINCT a.q_id) AS answered_questions, "
                 "CASE WHEN COUNT(DISTINCT a.q_id) = COUNT(DISTINCT q.q_id) THEN 'Completed' "
                 "WHEN COUNT(DISTINCT a.q_id) > 0 THEN 'In Progress' "
                 "ELSE 'Not Started' END AS module_status, "
-                "ROUND((COUNT(DISTINCT a.q_id) / COUNT(DISTINCT q.q_id)) * 100, 2) AS completion_percentage "
+                "CASE WHEN COUNT(DISTINCT q.q_id) = 0 THEN 0 "
+                "ELSE ROUND((COUNT(DISTINCT a.q_id) / NULLIF(COUNT(DISTINCT q.q_id), 0)) * 100, 2) "
+                "END AS completion_percentage "
                 "FROM Modules m "
                 "JOIN Languages l ON m.lang_id = l.lang_id "
                 "LEFT JOIN Questions q ON m.m_id = q.m_id "
@@ -94,26 +96,29 @@ def user_progress_endpoint(u_id: int, db: Session = Depends(get_db)):
             {"user_id": u_id},
         ).all()
 
+        # Add null checks when creating ModuleProgress objects
         module_progress = [
             ModuleProgress(
+                module_id=row.m_id,
                 lang_id=row.lang_id,
                 language_name=row.language_name,
                 module_name=row.module_name,
-                total_questions=row.total_questions,
-                answered_questions=row.answered_questions,
+                total_questions=row.total_questions or 0,
+                answered_questions=row.answered_questions or 0,
                 module_status=row.module_status,
-                completion_percentage=float(row.completion_percentage),
+                completion_percentage=float(row.completion_percentage or 0),
             )
             for row in module_results
         ]
 
-        # Get overall progress (second result set)
+        # Add null checks for overall progress
         overall = db.execute(
             text(
                 "SELECT COUNT(DISTINCT q.q_id) AS total_questions, "
                 "COUNT(DISTINCT a.q_id) AS completed_questions, "
-                "ROUND((COUNT(DISTINCT a.q_id) / COUNT(DISTINCT q.q_id)) * 100, 2) "
-                "AS overall_completion_percentage "
+                "CASE WHEN COUNT(DISTINCT q.q_id) = 0 THEN 0 "
+                "ELSE ROUND((COUNT(DISTINCT a.q_id) / NULLIF(COUNT(DISTINCT q.q_id), 0)) * 100, 2) "
+                "END AS overall_completion_percentage "
                 "FROM Questions q "
                 "LEFT JOIN Answers a ON q.q_id = a.q_id AND a.u_id = :user_id"
             ),
@@ -121,9 +126,11 @@ def user_progress_endpoint(u_id: int, db: Session = Depends(get_db)):
         ).first()
 
         overall_progress = OverallProgress(
-            total_questions=overall.total_questions,
-            completed_questions=overall.completed_questions,
-            overall_completion_percentage=float(overall.overall_completion_percentage),
+            total_questions=overall.total_questions or 0,
+            completed_questions=overall.completed_questions or 0,
+            overall_completion_percentage=float(
+                overall.overall_completion_percentage or 0
+            ),
         )
 
         return UserProgress(
